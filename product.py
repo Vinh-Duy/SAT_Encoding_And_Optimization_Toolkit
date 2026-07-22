@@ -1,16 +1,28 @@
 import math
-
 from pysat.solvers import Glucose3
 import time
 
-new_variables_count = 0
 start_time = time.time()
+new_variables_count = 0
+
 def generate_variables(n):
     return [[i * n + j + 1 for j in range(n)] for i in range(n)]
 
 
-def generate_new_variables(start, length):
-    return [i for i in range(start, start + length)]
+def binomial_AMO(clauses, variables):
+    for i in range(0, len(variables)):
+        for j in range(i + 1, len(variables)):
+            clauses.append([-variables[i], -variables[j]])
+    return clauses
+
+def generate_matrix(start, variables_length):
+    p = math.ceil(math.sqrt(variables_length))
+    q = math.ceil(n / p)
+    return [
+        [i for i in range(start, start + p)],
+        [j for j in range(start + p, start + p + q)]
+    ]
+
 
 def generate_binary_combinations(n):
     binary_combinations = []
@@ -41,53 +53,32 @@ def binary_AMO(clauses, variables):
 
         binary_encoding(clauses, variables[i], temp_clause)
 
-def grouping_variables(variables, per_group):
-    groups = []
-    temp_groups = []
-    for i in range(len(variables)):
-        temp_groups.append(variables[i])
-        if((i + 1) % per_group == 0 or i == len(variables) - 1):
-            groups.append(temp_groups)
-            temp_groups = []
-    return groups
-
-def generate_commanders(start, length):
-    return [i for i in range(start, start + length)]
-
-
-def binomial_AMO(clauses, variables):
-    for i in range(0, len(variables)):
-        for j in range(i + 1, len(variables)):
-            clauses.append([-variables[i], -variables[j]])
-    return clauses
-
-
-def binomial_EO(clauses, variables):
-    clauses.append(variables)
-    binomial_AMO(clauses, variables)
-
-
-
 def at_most_one(clauses, variables):
-        global new_variables_count
-        groups = grouping_variables(variables, n/math.floor(math.sqrt(n)))
-        commanders = generate_commanders(n ** 2 + new_variables_count + 1, len(groups))
-        new_variables_count += len(groups)
-        binomial_AMO(clauses, commanders)
+    global new_variables_count
+    matrix = generate_matrix(n ** 2 + new_variables_count + 1, len(variables))
+    row = matrix[0]
+    col = matrix[1]
+    new_variables_count += len(row) + len(col)
 
-        for i in range(len(commanders)):
-            if len(groups[i]) > 4:
-                binary_AMO(clauses, groups[i])
-            else:
-                binomial_AMO(clauses, groups[i])
-            clauses.append(groups[i] + [-commanders[i]])
-            for j in range(len(groups[i])):
-                clauses.append([commanders[i], -groups[i][j]])
+    if(len(variables) > 10):
+        binary_AMO(clauses, row)
+        binary_AMO(clauses, col)
+    else:
+        binomial_AMO(clauses, row)
+        binomial_AMO(clauses, col)
+
+    x = 0
+    for i in range(len(row)):
+        for j in range(len(col)):
+            clauses.append([-variables[x], row[i]])
+            clauses.append([-variables[x], col[j]])
+            x += 1
+            if x == len(variables): break
+        if x == len(variables): break
 
 def exactly_one(clauses, variables):
     clauses.append(variables)
     at_most_one(clauses, variables)
-
 
 def generate_clauses(n, variables):
     clauses = []
@@ -128,7 +119,6 @@ def generate_clauses(n, variables):
             col += 1
         at_most_one(clauses, diagonal)
 
-
     for j in range(1, n - 1):
         diagonal = []
         row = 0
@@ -167,4 +157,5 @@ def print_solution(solution):
 
 n = 128
 solution = solve_n_queens(n)
+print_solution(solution)
 print("Run time:  %s seconds" % (time.time() - start_time))
