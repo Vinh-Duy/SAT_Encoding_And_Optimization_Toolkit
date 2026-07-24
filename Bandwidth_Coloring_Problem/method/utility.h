@@ -4,12 +4,7 @@
 #include <limits>
 #include <string>
 #include <vector>
-
-#include <cstddef>
-
-namespace SATSolver {
-    enum SOLVER { CADICAL };
-}
+#include "../sat_solver/SatSolver.h"
 
 namespace BCPSolver
 {

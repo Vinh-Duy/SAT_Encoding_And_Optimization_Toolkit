@@ -2,11 +2,7 @@
 #define BCP_BMCP_BCP_SOLVER_H
 #include <cstddef>
 
-namespace SATSolver {
-    enum SOLVER { CADICAL };
-
-    class SatSolver;
-}
+#include "../sat_solver/SatSolver.h"
 #include "utility.h"
 
 #include <map>
