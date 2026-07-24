@@ -1,7 +1,3 @@
-//
-// Created by homulily85 on 11/29/25.
-//
-
 #ifndef BCP_BMCP_BCP_SOLVER_H
 #define BCP_BMCP_BCP_SOLVER_H
 #include <cstddef>
